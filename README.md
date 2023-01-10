@@ -5,8 +5,8 @@ Imaging components using [OpenCV2](https://github.com/opencv/opencv-python) for 
 
 Install via pip:
 
-```commandline
-pip install "git+https://github.com/waikato-datamining/shallowflow.git#egg=shallowflow-cv2&subdirectory=cv2"
+```bash
+pip install "git+https://github.com/waikato-datamining/shallowflow-cv2.git"
 ```
 
 ## Actors
