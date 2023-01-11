@@ -9,26 +9,10 @@ Install via pip:
 pip install "git+https://github.com/waikato-datamining/shallowflow-cv2.git"
 ```
 
-## Actors
+## Classes
 
-* Sources
+[Documentation](https://github.com/waikato-datamining/shallowflow-doc/tree/main/classdoc/cv2/README.md)
 
-  * ...
-    
-* Transformers
-
-  * `shallowflow.cv2.transformers.ImageFileReader`
-  * `shallowflow.cv2.transformers.VideoFileReader`
-    
-* Sinks
-
-  * `shallowflow.cv2.sinks.ImageFileWriter`
-  * `shallowflow.cv2.sinks.VideoFileWriter`
-
-## Conversions
-
-* `shallowflow.cv2.conversions.FrameToJpgBytes`
-* `shallowflow.cv2.conversions.JpgBytesToFrame`
 
 ## Examples
 
