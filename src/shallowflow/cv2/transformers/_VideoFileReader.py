@@ -1,8 +1,12 @@
+from typing import Any
+
 import cv2
 import numpy
-from shallowflow.api.transformer import AbstractSimpleTransformer
-from shallowflow.api.config import Option
+
+from coed.config import Option
 from shallowflow.api.io import File
+from shallowflow.api.transformer import AbstractSimpleTransformer
+from ._image_output import IMAGE_OUTPUTS, IMAGE_OUTPUT_NUMPY, IMAGE_OUTPUT_PNG, IMAGE_OUTPUT_JPG
 
 STATE_CAP = "cap"
 STATE_FRAME_COUNT = "frame_count"
@@ -41,6 +45,8 @@ class VideoFileReader(AbstractSimpleTransformer):
                                         help="Forward only every nth frame."))
         self._option_manager.add(Option(name="max_frames", value_type=int, def_value=-1,
                                         help="The maximum number of frames to forward; <=0 for no limit."))
+        self._option_manager.add(Option(name="image_output", value_type=str, def_value=IMAGE_OUTPUT_NUMPY, choices=IMAGE_OUTPUTS,
+                                        help="In what format to forward the frames."))
 
     def _backup_state(self):
         """
@@ -91,7 +97,12 @@ class VideoFileReader(AbstractSimpleTransformer):
         :return: the list of types
         :rtype: list
         """
-        return [numpy.ndarray]
+        if self.get("image_output") == IMAGE_OUTPUT_NUMPY:
+            return [numpy.ndarray]
+        elif self.get("image_output") in [IMAGE_OUTPUT_JPG, IMAGE_OUTPUT_PNG]:
+            return [bytes]
+        else:
+            raise Exception("Unhandled image output: %s" % str(self.get("image_output")))
 
     def setup(self):
         """
@@ -133,6 +144,25 @@ class VideoFileReader(AbstractSimpleTransformer):
                 pass
             self._cap = None
 
+    def _convert_frame(self, frame: numpy.ndarray) -> Any:
+        """
+        Converts the frame into the correct format.
+
+        :param frame: the frame to convert
+        :type frame: numpy.ndarray
+        :return: the converted frame
+        """
+        if self.get("image_output") == IMAGE_OUTPUT_NUMPY:
+            return frame
+        elif self.get("image_output") == IMAGE_OUTPUT_JPG:
+            ok, buf = cv2.imencode(".jpg", frame)
+            return buf.tobytes()
+        elif self.get("image_output") == IMAGE_OUTPUT_PNG:
+            ok, buf = cv2.imencode(".png", frame)
+            return buf.tobytes()
+        else:
+            raise Exception("Unhandled image output: %s" % str(self.get("image_output")))
+
     def has_output(self):
         """
         Returns whether output data is available.
@@ -155,7 +185,7 @@ class VideoFileReader(AbstractSimpleTransformer):
                         self._frame_count += 1
                         if self._frame_count % self.get("nth_frame") == 0:
                             self._frames_processed += 1
-                            self._output.append(frame)
+                            self._output.append(self._convert_frame(frame))
                             if (max_frames > 0) and (self._frames_processed >= max_frames):
                                 self._close_video()
                                 break

@@ -24,7 +24,7 @@ class ImageFileWriter(AbstractFileWriter):
         :return: the list of types
         :rtype: list
         """
-        return [numpy.ndarray]
+        return [numpy.ndarray, bytes]
 
     def _do_execute(self):
         """
@@ -34,9 +34,13 @@ class ImageFileWriter(AbstractFileWriter):
         :rtype: str
         """
         result = None
-        fname = self.variables.expand(self.get("output_file"))
+        output_path = self.variables.expand(self.get("output_file"))
         try:
-            cv2.imwrite(fname, self._input)
+            if isinstance(self._input, bytes):
+                with open(output_path, "wb") as fp:
+                    fp.write(self._input)
+            else:
+                cv2.imwrite(output_path, self._input)
         except Exception:
-            result = self._handle_exception("Failed to write image to %s" % fname)
+            result = self._handle_exception("Failed to write image to %s" % output_path)
         return result

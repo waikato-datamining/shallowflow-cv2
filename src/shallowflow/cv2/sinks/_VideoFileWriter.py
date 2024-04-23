@@ -1,6 +1,6 @@
 import cv2
 import numpy
-from shallowflow.api.config import Option
+from coed.config import Option
 from shallowflow.api.sink import AbstractFileWriter
 
 STATE_VIDEO_OUT = "video out"
@@ -74,7 +74,7 @@ class VideoWriter(AbstractFileWriter):
         :return: the list of types
         :rtype: list
         """
-        return [numpy.ndarray]
+        return [numpy.ndarray, bytes]
 
     def _do_execute(self):
         """
@@ -84,20 +84,26 @@ class VideoWriter(AbstractFileWriter):
         :rtype: str
         """
         result = None
-        fname = self.variables.expand(self.get("output_file"))
+        output_path = self.variables.expand(self.get("output_file"))
+
+        if isinstance(self._input, bytes):
+            jpg_as_np = numpy.frombuffer(self._input, dtype=numpy.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+        else:
+            frame = self._input
 
         if self._video_out is None:
             try:
-                frame_height, frame_width, _ = self._input.shape
-                self._video_out = cv2.VideoWriter(fname, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), self.get("fps"),
+                frame_height, frame_width, _ = frame.shape
+                self._video_out = cv2.VideoWriter(output_path, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), self.get("fps"),
                                                   (frame_width, frame_height))
             except Exception:
-                result = self._handle_exception("Failed to open video output file: %s" % fname)
+                result = self._handle_exception("Failed to open video output file: %s" % output_path)
 
         try:
-            self._video_out.write(self._input)
+            self._video_out.write(frame)
         except Exception:
-            result = self._handle_exception("Failed to write image to %s" % fname)
+            result = self._handle_exception("Failed to write image to %s" % output_path)
         return result
 
     def wrap_up(self):
