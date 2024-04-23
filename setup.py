@@ -37,6 +37,11 @@ setup(
         "shallowflow-api",
         "opencv-python",
     ],
+    entry_points={
+        "class_lister": [
+            "sf.cv2=shallowflow.cv2.class_lister:list_classes",
+        ],
+    },
     version="0.0.1",
     author='Peter Reutemann',
     author_email='fracpete@waikato.ac.nz',
