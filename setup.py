@@ -13,7 +13,7 @@ def _read(f):
 
 
 setup(
-    name="shallowflow-cv2",
+    name="shallowflow_cv2",
     description="Imaging components for the Python 3 shallowflow workflow engine.",
     long_description=(
         _read('DESCRIPTION.rst') + b'\n' +
@@ -34,7 +34,7 @@ setup(
         "shallowflow",
     ],
     install_requires=[
-        "shallowflow-api",
+        "shallowflow_api",
         "opencv-python",
     ],
     entry_points={
